@@ -1,0 +1,230 @@
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Blurred Background - Atmospheric */
+.hero-bg-blurred {
+    position: absolute;
+    inset: 0;
+    background-size: 50%;
+    background-position: center 10%;
+    background-repeat: no-repeat;
+    filter: blur(30px) brightness(1.15) contrast(1.1) saturate(1.25);
+    transform: scale(1.1);
+    z-index: 1;
+}
+
+/* Sharp Layer - Interactive Spotlight */
+.hero-bg-sharp {
+    position: absolute;
+    inset: 0;
+    background-size: 50%;
+    background-position: center 10%;
+    background-repeat: no-repeat;
+    filter: blur(0px) brightness(1.15) contrast(1.15) saturate(1.25);
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.hero-bg-sharp.active {
+    opacity: 1;
+}
+
+/* Floating Clean Orbs - Subtle Motion */
+.hero-orbs {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    /* Behind content but above bg */
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    /* Softer blur */
+    opacity: 0.5;
+    /* Slightly more visible */
+    animation: floatOrb 12s infinite ease-in-out;
+}
+
+.orb-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(217, 119, 6, 0.15) 0%, transparent 70%);
+    top: -20%;
+    left: -10%;
+    animation-duration: 25s;
+}
+
+.orb-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+    bottom: -10%;
+    right: -10%;
+    animation-duration: 20s;
+    animation-delay: -5s;
+}
+
+@keyframes floatOrb {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(40px, -40px);
+    }
+}
+
+/* Film Grain - Texture */
+.hero-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noiseFilter)' /%3E%3C/svg%3E");
+    background-repeat: repeat;
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Gradient Vignette - THE KEY FOR TEXT READABILITY */
+/* Dark fade from bottom, stronger to support text */
+.hero-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 30%, transparent 70%);
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* Hero Content - Clean, No Box */
+.hero-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 1rem;
+    max-width: 60rem;
+    margin: 0 auto;
+
+    /* Positioned to be clearly visible */
+    margin-top: 35vh;
+
+    /* Removed Box Background */
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+
+    transform: translateY(20px);
+    animation: fadeUpText 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes fadeUpText {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-content h1 {
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    font-size: clamp(3.5rem, 10vw, 5.5rem);
+    /* Bigger */
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+
+    /* Clean shadow for contrast */
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.highlight-name {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.4));
+    /* Glow effect */
+}
+
+.hero-subtitle {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+    font-weight: 500;
+    color: #e5e5e5;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.02em;
+}
+
+.hero-location {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: clamp(1rem, 3vw, 1.125rem);
+    color: #9ca3af;
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* No hover lift effect needed for text-only */
+.hero-content:hover {
+    transform: none;
+    box-shadow: none;
+    border: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+    .hero-bg-blurred,
+    .hero-bg-sharp {
+        background-size: 250%;
+        /* Zoomed in face */
+        background-position: center 15%;
+        /* Top aligned */
+    }
+
+    /* Stronger gradient on mobile for text support */
+    .hero-vignette {
+        background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.9) 40%, transparent 80%);
+    }
+
+    .hero-content {
+        margin-top: 45vh;
+        /* Push text well below face */
+        padding-bottom: 4rem;
+        /* Bottom spacing */
+    }
+
+    .hero-content h1 {
+        font-size: 2.75rem;
+        /* Still large on mobile */
+    }
+}
+
+@media (min-width: 769px) {
+
+    .hero-bg-blurred,
+    .hero-bg-sharp {
+        background-size: 50%;
+        background-position: center 10%;
+    }
+}

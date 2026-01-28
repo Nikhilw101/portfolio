@@ -1,0 +1,116 @@
+.achievements-section {
+    background-color: var(--bg-charcoal);
+}
+
+.achievements-section h2 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    margin-bottom: 3rem;
+}
+
+.achievements-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.achievement-card {
+    display: flex;
+    gap: 1.5rem;
+    background: var(--bg-glass);
+    backdrop-filter: blur(var(--blur-glass));
+    -webkit-backdrop-filter: blur(var(--blur-glass));
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.achievement-card:hover {
+    transform: translateX(8px);
+    border-color: var(--accent-amber);
+    box-shadow: 0 12px 32px rgba(217, 119, 6, 0.15);
+}
+
+.achievement-icon {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(217, 119, 6, 0.1);
+    border: 1px solid var(--accent-amber);
+    border-radius: var(--radius-md);
+    color: var(--accent-amber);
+}
+
+.achievement-content {
+    flex: 1;
+}
+
+.achievement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.achievement-card h3 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.achievement-position {
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.35rem 0.85rem;
+    background: rgba(217, 119, 6, 0.15);
+    border: 1px solid var(--accent-amber);
+    border-radius: var(--radius-full);
+    color: var(--accent-amber);
+    white-space: nowrap;
+}
+
+.achievement-details {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: 1rem;
+}
+
+.achievement-meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-dark-gray);
+}
+
+@media (max-width: 768px) {
+    .achievement-card {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .achievement-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .achievement-icon {
+        width: 48px;
+        height: 48px;
+    }
+}
