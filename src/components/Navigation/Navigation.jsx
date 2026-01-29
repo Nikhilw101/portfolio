@@ -72,13 +72,15 @@ const Navigation = ({ activeSection, setActiveSection }) => {
                 </div>
 
                 {/* Mobile Menu Toggle */}
-                <button
-                    className="nav-menu-toggle"
-                    onClick={() => setIsOpen(!isOpen)}
-                    aria-label="Toggle menu"
-                >
-                    {isOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                <div className="mobile-controls">
+                    <button
+                        className="nav-menu-toggle"
+                        onClick={() => setIsOpen(!isOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        {isOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </nav>
 
             {/* Full-Screen Mobile Menu Overlay */}

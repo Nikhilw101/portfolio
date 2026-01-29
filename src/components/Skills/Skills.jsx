@@ -1,6 +1,9 @@
 import React from 'react';
 import { skills } from '../../data/portfolio';
-import { Code2, Layout, Server, Database, Wrench, BookOpen } from 'lucide-react';
+import {
+    Code2, Layout, Server, Database, Wrench, BookOpen,
+    Smartphone, Terminal, Cpu, Globe, Cloud, Shield
+} from 'lucide-react';
 import './Skills.css';
 
 // Icon mapping
@@ -15,23 +18,28 @@ const iconMap = {
 
 const Skills = () => {
     return (
-        <section className="section skills-section">
+        <section id="work" className="section skills-section">
             <div className="content-width">
-                <h2>Skills & Expertise</h2>
+                <h2 className="section-title">Tech Arsenal</h2>
 
                 <div className="skills-grid">
                     {skills.categories.map((category, index) => {
                         const IconComponent = iconMap[category.icon];
 
                         return (
-                            <div key={index} className="skill-category-card">
-                                <div className="category-header">
-                                    {IconComponent && <IconComponent size={24} className="category-icon" />}
+                            <div key={index} className="skill-card">
+                                <div className="card-glow"></div>
+                                <div className="card-header">
+                                    <div className="icon-box">
+                                        {IconComponent && <IconComponent size={24} />}
+                                    </div>
                                     <h3>{category.name}</h3>
                                 </div>
                                 <div className="skill-tags">
                                     {category.items.map((item, i) => (
-                                        <span key={i} className="skill-tag">{item}</span>
+                                        <span key={i} className="tech-tag">
+                                            {item}
+                                        </span>
                                     ))}
                                 </div>
                             </div>

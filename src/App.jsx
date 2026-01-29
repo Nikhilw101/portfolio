@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ThemeProvider } from './context/ThemeContext';
 import { getActiveSection } from './utils/scroll';
 import ScrollReveal from './components/utils/ScrollReveal';
 import Navigation from './components/Navigation/Navigation';
@@ -38,59 +39,61 @@ function App() {
   }, []);
 
   return (
-    <div className={`app ${isLoading ? '' : 'fade-in'}`}>
-      {/* Loading fade overlay */}
-      {isLoading && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: '#000',
-            zIndex: 50,
-            transition: 'opacity 1s ease-in-out',
-            opacity: 0,
-            pointerEvents: 'none'
-          }}
-        />
-      )}
+    <ThemeProvider>
+      <div className={`app ${isLoading ? '' : 'fade-in'}`} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+        {/* Loading fade overlay */}
+        {isLoading && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'var(--bg-primary)',
+              zIndex: 50,
+              transition: 'opacity 1s ease-in-out',
+              opacity: 0,
+              pointerEvents: 'none'
+            }}
+          />
+        )}
 
-      <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />
-      <Hero />
+        <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />
+        <Hero />
 
-      <ScrollReveal>
-        <About />
-      </ScrollReveal>
+        <ScrollReveal>
+          <About />
+        </ScrollReveal>
 
-      <ScrollReveal>
-        <Projects />
-      </ScrollReveal>
+        <ScrollReveal>
+          <Projects />
+        </ScrollReveal>
 
-      <ScrollReveal>
-        <Publications />
-      </ScrollReveal>
+        <ScrollReveal>
+          <Publications />
+        </ScrollReveal>
 
-      <ScrollReveal>
-        <Experience />
-      </ScrollReveal>
+        <ScrollReveal>
+          <Experience />
+        </ScrollReveal>
 
-      <ScrollReveal>
-        <Skills />
-      </ScrollReveal>
+        <ScrollReveal>
+          <Skills />
+        </ScrollReveal>
 
-      <ScrollReveal>
-        <Achievements />
-      </ScrollReveal>
+        <ScrollReveal>
+          <Achievements />
+        </ScrollReveal>
 
-      <ScrollReveal>
-        <CTA />
-      </ScrollReveal>
+        <ScrollReveal>
+          <CTA />
+        </ScrollReveal>
 
-      <ScrollReveal>
-        <Contact />
-      </ScrollReveal>
+        <ScrollReveal>
+          <Contact />
+        </ScrollReveal>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </ThemeProvider>
   );
 }
 
