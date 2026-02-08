@@ -42,6 +42,15 @@ export const education = [
 
 export const projects = [
     {
+        title: 'Grape Master – E-commerce Web Application',
+        year: '2025',
+        description: 'Developed a full-stack e-commerce web platform for selling fresh grapes with complete product, order, and user management workflows.',
+        tech: 'Implemented CRUD operations for products, categories, users, and orders through a secure admin panel with role-based access control. Integrated Stripe payment gateway, automated email notifications for order and delivery updates, and scalable REST APIs for cart, checkout, order tracking, and analytics. Responsive UI with smooth navigation and clean backend architecture.',
+        stack: ['Node.js', 'Express.js', 'React', 'MongoDB', 'Stripe API', 'REST API', 'Email Automation', 'Admin Dashboard'],
+        github: 'https://github.com/Nikhilw101/GrapeMasterWeb',
+        live: 'https://grape-master.vercel.app/'
+    },
+    {
         title: 'RAG-Based Real-Time Voice Assistant',
         year: '2025',
         description: 'Developed a real-time AI voice assistant using Groq Whisper, Groq LLM with Vector RAG, and ElevenLabs TTS to generate context-aware responses from a custom dataset.',
