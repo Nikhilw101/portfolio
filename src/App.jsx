@@ -13,11 +13,39 @@ import Skills from './components/Skills/Skills';
 import CTA from './components/CTA/CTA';
 import Contact from './components/Contact/Contact';
 import Footer from './components/Footer/Footer';
+import SecretAdmin from './components/Admin/SecretAdmin';
+import { useAnalytics } from './hooks/useAnalytics';
 import './styles/global.css';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('home');
+  const [isAdminView, setIsAdminView] = useState(
+    window.location.pathname === '/secret-admin' || 
+    window.location.pathname === '/admin' || 
+    window.location.hash === '#secret-admin'
+  );
+
+  // Initialize background analytics tracking
+  useAnalytics();
+
+  // Route & Hash change listener for secret admin page access
+  useEffect(() => {
+    const handleRouteCheck = () => {
+      const isSecret = 
+        window.location.pathname === '/secret-admin' || 
+        window.location.pathname === '/admin' || 
+        window.location.hash === '#secret-admin';
+      setIsAdminView(isSecret);
+    };
+
+    window.addEventListener('popstate', handleRouteCheck);
+    window.addEventListener('hashchange', handleRouteCheck);
+    return () => {
+      window.removeEventListener('popstate', handleRouteCheck);
+      window.removeEventListener('hashchange', handleRouteCheck);
+    };
+  }, []);
 
   // Page load fade-in
   useEffect(() => {
@@ -38,6 +66,19 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // If secret admin route triggered, render Secret Admin Dashboard
+  if (isAdminView) {
+    return (
+      <SecretAdmin 
+        onBackToSite={() => {
+          window.history.pushState({}, '', '/');
+          window.location.hash = '';
+          setIsAdminView(false);
+        }} 
+      />
+    );
+  }
+
   return (
     <ThemeProvider>
       <div className={`app ${isLoading ? '' : 'fade-in'}`} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
@@ -57,30 +98,45 @@ function App() {
         )}
 
         <Navigation activeSection={activeSection} setActiveSection={setActiveSection} />
-        <Hero />
+        
+        <div id="home">
+          <Hero />
+        </div>
 
         <ScrollReveal>
-          <About />
+          <div id="about">
+            <About />
+          </div>
         </ScrollReveal>
 
         <ScrollReveal>
-          <Projects />
+          <div id="projects">
+            <Projects />
+          </div>
         </ScrollReveal>
 
         <ScrollReveal>
-          <Publications />
+          <div id="publications">
+            <Publications />
+          </div>
         </ScrollReveal>
 
         <ScrollReveal>
-          <Experience />
+          <div id="experience">
+            <Experience />
+          </div>
         </ScrollReveal>
 
         <ScrollReveal>
-          <Skills />
+          <div id="skills">
+            <Skills />
+          </div>
         </ScrollReveal>
 
         <ScrollReveal>
-          <Achievements />
+          <div id="achievements">
+            <Achievements />
+          </div>
         </ScrollReveal>
 
         <ScrollReveal>
@@ -88,7 +144,9 @@ function App() {
         </ScrollReveal>
 
         <ScrollReveal>
-          <Contact />
+          <div id="contact">
+            <Contact />
+          </div>
         </ScrollReveal>
 
         <Footer />
@@ -98,3 +156,4 @@ function App() {
 }
 
 export default App;
+

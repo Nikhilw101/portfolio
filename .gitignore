@@ -11,6 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+*.env
+
+# Sensitive credential files
+atlas-credentials.env
+
+# DB utility scripts — do NOT commit
+clean_db.mjs
+test_db.mjs
 
 # Editor directories and files
 .vscode/*
