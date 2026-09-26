@@ -1,6 +1,6 @@
 import React from 'react';
 import { projects } from '../../data/portfolio';
-import { Code2, Calendar, Github, ExternalLink } from 'lucide-react';
+import { Code2, Calendar, Github, ExternalLink, Zap, Radio } from 'lucide-react';
 import './Projects.css';
 
 const Projects = () => {
@@ -11,26 +11,43 @@ const Projects = () => {
 
                 <div className="projects-grid">
                     {projects.map((project, index) => (
-                        <div key={index} className="project-card">
+                        <div key={index} className={`project-card${project.isLatest ? ' project-card--latest' : ''}`}>
+                            {/* Header row: badges left, year right */}
                             <div className="project-header">
-                                <Code2 size={24} className="project-icon" />
+                                <div className="project-badges">
+                                    {project.isLatest && (
+                                        <span className="badge badge--latest">
+                                            <Zap size={12} />
+                                            Latest
+                                        </span>
+                                    )}
+                                    {project.isLive && (
+                                        <span className="badge badge--live">
+                                            <Radio size={12} />
+                                            Live
+                                        </span>
+                                    )}
+                                </div>
                                 <span className="project-year">
-                                    <Calendar size={16} />
+                                    <Calendar size={14} />
                                     {project.year}
                                 </span>
                             </div>
 
-                            <h3>{project.title}</h3>
-                            <p className="project-description">{project.description}</p>
-                            <p className="project-tech">{project.tech}</p>
+                            {/* Title */}
+                            <h3 className="project-title">{project.title}</h3>
 
+                            {/* Description */}
+                            <p className="project-description">{project.description}</p>
+
+                            {/* Tech tags */}
                             <div className="tech-stack">
                                 {project.stack.map((tech, i) => (
                                     <span key={i} className="tech-tag">{tech}</span>
                                 ))}
                             </div>
 
-                            {/* Project Links */}
+                            {/* CTA Links */}
                             {(project.github || project.live) && (
                                 <div className="project-links">
                                     {project.github && (
@@ -39,9 +56,10 @@ const Projects = () => {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="project-link"
+                                            aria-label={`${project.title} GitHub repository`}
                                         >
-                                            <Github size={18} />
-                                            <span>Code</span>
+                                            <Github size={16} />
+                                            <span>GitHub</span>
                                         </a>
                                     )}
                                     {project.live && (
@@ -49,10 +67,11 @@ const Projects = () => {
                                             href={project.live}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="project-link"
+                                            className="project-link project-link--primary"
+                                            aria-label={`${project.title} live demo`}
                                         >
-                                            <ExternalLink size={18} />
-                                            <span>Live</span>
+                                            <ExternalLink size={16} />
+                                            <span>Live Demo</span>
                                         </a>
                                     )}
                                 </div>

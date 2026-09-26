@@ -6,7 +6,7 @@
 }
 
 .contact-content {
-    max-width: 50rem;
+    max-width: 56rem;
     text-align: center;
     width: 100%;
 }
@@ -25,11 +25,11 @@
     line-height: var(--line-height-relaxed);
 }
 
+/* 2-column on desktop, 1-column on mobile */
 .contact-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    margin-bottom: 2rem;
 }
 
 .contact-card {
@@ -53,7 +53,7 @@
     box-shadow: 0 12px 32px rgba(217, 119, 6, 0.15);
 }
 
-.contact-card>svg:first-child {
+.contact-card > svg:first-child {
     color: var(--accent-amber);
     flex-shrink: 0;
 }
@@ -88,37 +88,32 @@
     transform: translate(2px, -2px);
 }
 
-/* Subtle secondary links */
-.secondary-links {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border-subtle);
+/* LeetCode card — subtle orange-tinted accent on hover */
+.contact-card--leetcode {
+    border-color: rgba(255, 161, 22, 0.25);
 }
 
-.secondary-link {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    color: var(--text-dark-gray);
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.6;
+.contact-card--leetcode > svg:first-child {
+    color: #ffa116;
 }
 
-.secondary-link:hover {
-    color: var(--accent-amber);
-    opacity: 1;
+.contact-card--leetcode:hover {
+    border-color: #ffa116;
+    box-shadow: 0 12px 32px rgba(255, 161, 22, 0.18);
 }
 
-.secondary-link svg {
-    flex-shrink: 0;
+.contact-card--leetcode:hover .external-icon {
+    color: #ffa116;
 }
 
 @media (max-width: 768px) {
     .contact-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 480px) and (max-width: 768px) {
+    .contact-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }

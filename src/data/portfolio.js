@@ -9,7 +9,7 @@ export const personalInfo = {
     github: 'https://github.com/nikhilw101/',
     linkedin: 'https://www.linkedin.com/in/nikhil-wagh-2155282ab/',
     leetcode: 'https://leetcode.com/u/Nikhilw101/',
-    resume: 'https://drive.google.com/file/d/18V_CW_db4FG1R1sf9vgxNOM5otVQFHY3/view?usp=sharing'
+    resume: 'https://drive.google.com/file/d/1rETQnU6Yxl7H6O6A3woBGn4OKNJkKVhH/view?usp=sharing'
 };
 
 export const aboutText = {
@@ -20,7 +20,7 @@ export const education = [
     {
         institution: 'Vishwakarma Institute Of Technology, Pune',
         degree: 'B.Tech in AIDS',
-        score: 'CGPA: 8.88',
+        score: 'CGPA: 8.96',
         duration: '2024 – 2027',
         location: 'Pune, India'
     },
@@ -41,67 +41,74 @@ export const education = [
 ];
 
 export const projects = [
+    // 1 — Kidney Stone Classification
     {
-        title: 'Grape Master – E-commerce Web Application',
+        title: 'Kidney Stone Classification & Grad-CAM Detection',
         year: '2025',
-        description: 'Developed a full-stack e-commerce web platform for selling fresh grapes with complete product, order, and user management workflows.',
-        tech: 'Implemented CRUD operations for products, categories, users, and orders through a secure admin panel with role-based access control. Integrated Stripe payment gateway, automated email notifications for order and delivery updates, and scalable REST APIs for cart, checkout, order tracking, and analytics. Responsive UI with smooth navigation and clean backend architecture.',
-        stack: ['Node.js', 'Express.js', 'React', 'MongoDB', 'Stripe API', 'REST API', 'Email Automation', 'Admin Dashboard'],
-        github: 'https://github.com/Nikhilw101/GrapeMasterWeb',
-        live: 'https://grape-master.vercel.app/'
+        description: 'End-to-end medical imaging pipeline that detects kidney stones from CT scans using DenseNet121. Achieves 93.6% validation accuracy with patient-level data splitting to prevent leakage.',
+        tech: 'Grad-CAM heatmaps provide visual explainability — highlighting the exact kidney region influencing each prediction. Deployed as a Streamlit web app for real-time image upload and inference.',
+        stack: ['Python', 'PyTorch', 'DenseNet121', 'Grad-CAM', 'Streamlit', 'scikit-learn'],
+        github: 'https://github.com/Nikhilw101/Kedney_Stone_Classification_-_Gradcamp_detection',
+        live: null
     },
+    // 2 — RAG Voice Assistant
     {
         title: 'RAG-Based Real-Time Voice Assistant',
-        year: '2025',
-        description: 'Developed a real-time AI voice assistant using Groq Whisper, Groq LLM with Vector RAG, and ElevenLabs TTS to generate context-aware responses from a custom dataset.',
-        tech: 'Built low-latency REST APIs and WebSocket streaming to support real-time, multilingual voice interactions.',
-        stack: ['Python', 'Groq API', 'Vector RAG', 'WebSocket', 'REST API'],
+        year: '2026',
+        description: 'Real-time AI voice assistant using Groq Whisper for transcription, Groq LLM with Vector RAG for context-aware responses, and ElevenLabs TTS for speech synthesis.',
+        tech: 'Built low-latency REST APIs and WebSocket streaming for real-time, multilingual voice interactions from a custom knowledge dataset.',
+        stack: ['Python', 'Groq API', 'Vector RAG', 'WebSocket', 'ElevenLabs', 'REST API'],
         github: 'https://github.com/Nikhilw101/RAG-Based-Real-Time-Voice-Assistant',
         live: null
     },
+    // 3 — HomeSync
     {
-        title: 'ForumHub – Open Discussion Platform',
-        year: '2025',
-        description: 'Developed a web-based open discussion platform where users can start conversations on any topic and share images or videos.',
-        tech: 'The platform includes role-based access with separate admin and user modules, enabling controlled CRUD operations for posts, users, and reported content. Designed to support real-time community interaction with a clean, scalable architecture focused on usability and moderation.',
-        stack: ['React.js', 'Node.js', 'MongoDB', 'REST API', 'CRUD'],
-        github: 'https://github.com/Nikhilw101/ForumHub',
-        live: null
+        title: 'HomeSync — AI-Powered Flatmate & Rental Matching Platform',
+        year: '2026',
+        description: 'Full-stack rental/flatmate matching platform that connects property owners with compatible tenants using a hybrid AI + rule-engine Fit Score (out of 100). Calculates real geographic distance via the Haversine formula and hard-filters listings outside the configured search radius.',
+        tech: 'Dual-engine design: Google Gemini 1.5 Flash for nuanced AI scoring with a deterministic rule engine as fallback. Real-time owner-tenant chat via Socket.io. Smart email notifications (Brevo) for high-compatibility matches (≥80%).',
+        stack: ['React', 'Node.js', 'Express.js', 'MongoDB', 'Gemini AI', 'Socket.io', 'JWT', 'Cloudinary'],
+        github: 'https://github.com/Nikhilw101/flatmate-finder',
+        live: 'https://homesync-rent.vercel.app/'
     },
+    // 4 — E-Commerce
     {
-        title: 'CakeStake – Web-Based Cake Recommendation System',
+        title: 'Grape Master – E-commerce Web Application',
         year: '2025',
-        description: 'Built a web platform to recommend products with personalized suggestions, ratings, and an admin-controlled CRUD system for managing products and users.',
-        tech: 'Full-stack development with modern web technologies.',
-        stack: ['React.js', 'Node.js', 'MongoDB', 'REST API'],
-        github: null,
-        live: null
+        description: 'Full-stack e-commerce platform for fresh grape sales with complete product, order, and user management. Stripe payment integration, automated email notifications, and a role-based admin panel.',
+        tech: 'Secure admin panel with CRUD for products, categories, users, and orders. Scalable REST APIs for cart, checkout, order tracking, and analytics.',
+        stack: ['Node.js', 'Express.js', 'React', 'MongoDB', 'Stripe API', 'REST API', 'Admin Dashboard'],
+        github: 'https://github.com/Nikhilw101/GrapeMasterWeb',
+        live: 'https://grape-master.vercel.app/'
     },
-    {
-        title: 'Book Recommendation Platform',
-        year: '2025',
-        description: 'Developed a web-based platform that allows users to search from a large collection of free books.',
-        tech: 'The system provides personalized book recommendations based on user reading history and preferences using basic recommendation techniques. Implemented a content-based recommendation approach using TF-IDF to suggest relevant books and improve the discovery experience.',
-        stack: ['Python', 'TF-IDF', 'Recommendation System', 'Web Application'],
-        github: 'https://github.com/Nikhilw101/book_Recomm_backend',
-        live: 'https://book-recomm-platform.vercel.app/'
-    },
+    // 5 — Sentiment Analysis
     {
         title: 'YouTube Comment Sentiment Analysis',
         year: '2025',
-        description: 'Implemented a sentiment analysis system to analyze YouTube video comments using mBERT.',
-        tech: 'The platform categorizes sentiments and visualizes trends using a React-based dashboard.',
+        description: 'Sentiment analysis system that categorizes YouTube video comments using mBERT. Visualizes sentiment trends and distributions via an interactive React dashboard.',
+        tech: 'Multilingual BERT model handles comments across languages. Sentiment categories and trend charts rendered in a clean React UI.',
         stack: ['Python', 'mBERT', 'React.js', 'NLP', 'Data Visualization'],
         github: 'https://github.com/Nikhilw101/Sentiment_analysis_front',
         live: 'https://sentiment-analysis-front.vercel.app/'
     },
+    // 6 — Book Recommendation
     {
-        title: 'OS Simulator – Operating System Concepts Visualizer',
+        title: 'Book Recommendation Platform',
         year: '2025',
-        description: 'Developed an interactive simulator to demonstrate core operating system functionalities and concepts.',
-        tech: 'The project visually explains how different OS components work, making complex topics easier to understand for students. Designed as an educational tool to bridge the gap between theory and practical understanding of operating systems.',
-        stack: ['Computer Networks', 'Operating Systems', 'Simulation', 'Educational Tool'],
-        github: null,
+        description: 'Web platform for discovering books from a large free collection. Provides personalized recommendations using content-based filtering with TF-IDF to improve the discovery experience.',
+        tech: 'TF-IDF content-based recommendations match books to user reading history and preferences. Clean search and browsing experience with a full-stack architecture.',
+        stack: ['Python', 'TF-IDF', 'Recommendation System', 'React.js', 'Web Application'],
+        github: 'https://github.com/Nikhilw101/book_Recomm_backend',
+        live: 'https://book-recomm-platform.vercel.app/'
+    },
+    // 7 — Pitch Deck Extractor
+    {
+        title: 'Pitch Deck Extractor',
+        year: '2025',
+        description: 'Production-oriented monorepo for extracting, structuring, and analysing PDF/PPTX pitch decks. Produces structured section data, signals, red flags with evidence, confidence scores, and summaries. Supports semantic deck search and PDF report export.',
+        tech: 'Rust/Axum backend handles all extraction and LLM orchestration via Ollama. Cohere embeddings power HNSW vector search. React + Vite frontend for upload, report review, and PDF export.',
+        stack: ['Rust', 'Axum', 'Tokio', 'Ollama', 'Cohere', 'HNSW', 'React', 'Vite', 'MongoDB'],
+        github: 'https://github.com/Nikhilw101/pitch_deck_extraction',
         live: null
     }
 ];
@@ -109,24 +116,34 @@ export const projects = [
 export const publications = [
     {
         type: 'Journal Paper',
-        title: 'Published Research Paper',
+        title: 'VidTextBot using Generative AI',
         venue: 'JISEM Journal',
         year: '2025',
+        description: 'Published research paper in JISEM Journal on building a generative AI-powered video text bot.',
+        authors: 'Nikhil Wagh et al.',
         link: 'https://jisem-journal.com/index.php/journal/article/view/2894'
     },
     {
         type: 'Conference Paper',
-        title: 'Published Research Paper',
-        venue: 'Springer',
+        title: 'Book Recommendation Platform using AI',
+        venue: 'Springer International Conference',
         year: '2025',
+        description: 'Conference paper published in Springer on an AI-driven book recommendation system.',
+        authors: 'Nikhil Wagh et al.',
         link: 'https://link.springer.com/chapter/10.1007/978-3-032-06694-7_44'
     },
     {
         type: 'Patent',
-        title: 'Patent Filing',
-        venue: 'Intellectual Property',
-        year: '2025',
-        link: 'https://drive.google.com/file/d/1r02fnWbOy9xpPf_iGsvUDh01F4HjkVZg/view?usp=sharing'
+        title: 'A Real-Time Multilingual Voice Assistant System with Edge-Based Audio Signal Processing and Interactive Dashboard for Intelligent Institutional Communication',
+        venue: 'Intellectual Property India',
+        year: '2026',
+        description: 'Ordinary Patent Application filed with the Indian Patent Office (Electronics field). Application Number: 202021034469. Publication Date (U/S 11A): 15/05/2026.',
+        authors: 'Surabhi Kakade, Radhika Gadewar, Akanksha Katore, Nikhil Wagh, Aryan Sable, Sufiyan Sajan',
+        applicationNumber: '202021034469',
+        filingDate: '29/04/2026',
+        publicationDate: '15/05/2026',
+        fieldOfInvention: 'Electronics',
+        link: 'https://drive.google.com/file/d/1UXDSoBd6CJyBRXxhYG6NL3_vVH0sQ-cA/view?usp=sharing'
     }
 ];
 
@@ -147,27 +164,32 @@ export const skills = {
         {
             name: 'Languages',
             icon: 'Code2',
-            items: ['Java', 'C/C++', 'Python', 'JavaScript']
+            items: ['Java', 'C/C++', 'Python', 'JavaScript', 'Rust']
         },
         {
             name: 'Frontend',
             icon: 'Layout',
-            items: ['React.js', 'HTML', 'CSS']
+            items: ['React.js', 'Vite', 'HTML', 'CSS', 'Tailwind']
         },
         {
             name: 'Backend',
             icon: 'Server',
-            items: ['Node.js', 'Flask']
+            items: ['Node.js', 'Express.js', 'Flask', 'Axum', 'Socket.io']
         },
         {
             name: 'Database',
             icon: 'Database',
-            items: ['MySQL', 'MongoDB']
+            items: ['MySQL', 'MongoDB', 'MongoDB Atlas', 'Vector DB']
+        },
+        {
+            name: 'AI / ML',
+            icon: 'Brain',
+            items: ['Machine Learning', 'Deep Learning', 'RAG', 'Vector Search', 'NLP', 'Gemini AI', 'Ollama', 'Cohere']
         },
         {
             name: 'Tools',
             icon: 'Wrench',
-            items: ['VS Code', 'Postman', 'GitHub', 'Vercel']
+            items: ['VS Code', 'Postman', 'GitHub', 'Vercel', 'Cloudinary', 'Docker']
         },
         {
             name: 'Coursework',
@@ -212,5 +234,5 @@ export const contactText = {
 };
 
 export const footer = {
-    copyright: '© 2025 Nikhil Wagh. Built with precision.'
+    copyright: '© 2026 Nikhil Wagh. Built with precision.'
 };

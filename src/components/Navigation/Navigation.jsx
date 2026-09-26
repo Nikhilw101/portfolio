@@ -48,16 +48,6 @@ const Navigation = ({ activeSection, setActiveSection }) => {
     return (
         <>
             <nav className={`navigation ${scrolled ? 'scrolled' : ''}`}>
-                <button
-                    className="nav-brand"
-                    onClick={() => {
-                        scrollToSection('home');
-                        setActiveSection('home');
-                    }}
-                >
-                    NW
-                </button>
-
                 {/* Desktop Menu */}
                 <div className="nav-menu-desktop">
                     {menuItems.map((item) => (

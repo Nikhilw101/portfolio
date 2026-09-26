@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Github, Linkedin, ExternalLink, Code } from 'lucide-react';
+import { Mail, Github, Linkedin, ExternalLink, Code2 } from 'lucide-react';
 import { personalInfo, contactText } from '../../data/portfolio';
 import './Contact.css';
 
@@ -38,13 +38,15 @@ const Contact = () => {
                         </div>
                         <ExternalLink size={18} className="external-icon" />
                     </a>
-                </div>
 
-                {/* LeetCode - Subtle link */}
-                <div className="secondary-links">
-                    <a href={personalInfo.leetcode} target="_blank" rel="noopener noreferrer" className="secondary-link">
-                        <Code size={14} />
-                        <span>LeetCode Profile</span>
+                    {/* LeetCode — full card, same treatment as GitHub/LinkedIn */}
+                    <a href={personalInfo.leetcode} target="_blank" rel="noopener noreferrer" className="contact-card contact-card--leetcode">
+                        <Code2 size={24} />
+                        <div>
+                            <h4>LeetCode</h4>
+                            <p>View my profile</p>
+                        </div>
+                        <ExternalLink size={18} className="external-icon" />
                     </a>
                 </div>
             </div>

@@ -1,8 +1,7 @@
 import React from 'react';
 import { skills } from '../../data/portfolio';
 import {
-    Code2, Layout, Server, Database, Wrench, BookOpen,
-    Smartphone, Terminal, Cpu, Globe, Cloud, Shield
+    Code2, Layout, Server, Database, Wrench, BookOpen, Brain
 } from 'lucide-react';
 import './Skills.css';
 
@@ -12,6 +11,7 @@ const iconMap = {
     'Layout': Layout,
     'Server': Server,
     'Database': Database,
+    'Brain': Brain,
     'Wrench': Wrench,
     'BookOpen': BookOpen
 };
