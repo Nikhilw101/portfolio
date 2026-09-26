@@ -21,10 +21,16 @@ export default async function handler(req, res) {
       target = '',
       dwellTimeMs = 0,
       referrer = '',
+      trafficSource = 'Direct / Bookmark',
       device = {},
     } = req.body || {};
 
     if (!visitorId) return res.status(400).json({ error: 'visitorId required' });
+
+    // Format clean visitor ID string
+    const cleanVisitorId = visitorId.startsWith('USR-')
+      ? visitorId
+      : `USR-${String(visitorId).replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase() || 'ANON'}`;
 
     // ── IP hash ─────────────────────────────────────────────────
     const headers = req.headers || {};
@@ -47,19 +53,6 @@ export default async function handler(req, res) {
     const eventsColl    = db.collection('events');
 
     // ── SERVER-SIDE DEDUPLICATION ────────────────────────────────
-    //
-    // For page_view:
-    //   Use sessionId to dedup — one page_view per sessionId.
-    //   sessionId is created once per browser session (tab lifetime)
-    //   and sent by the client on every event.
-    //   If a page_view with this sessionId already exists → reject.
-    //
-    // For section_dwell:
-    //   Same visitorId + same target within 5s → reject.
-    //
-    // For clicks:
-    //   Same visitorId + same target within 2s → reject.
-    //
     if (eventType === 'page_view') {
       if (sessionId) {
         const alreadyTracked = await eventsColl.findOne({ sessionId, eventType: 'page_view' });
@@ -68,10 +61,10 @@ export default async function handler(req, res) {
         }
       }
     } else {
-      const windowMs = eventType === 'section_dwell' ? 5_000 : 2_000;
+      const windowMs = eventType === 'section_dwell' ? 4_000 : 1_500;
       const since    = new Date(now.getTime() - windowMs);
       const dup = await eventsColl.findOne({
-        visitorId,
+        visitorId: cleanVisitorId,
         eventType,
         target,
         timestamp: { $gte: since },
@@ -81,21 +74,17 @@ export default async function handler(req, res) {
       }
     }
 
-    // ── VISITOR UPSERT ──────────────────────────────────────────
-    //
-    // visitors collection semantics:
-    //   visitCount    = 1 always (just marks this person exists; count docs for unique visitors)
-    //   pageViewCount = total page sessions (tab opens) by this visitor
-    //
-    const existing = await visitorsColl.findOne({ visitorId });
+    // ── VISITOR UPSERT & VISIT COUNT TRACKING ───────────────────
+    let visitorDoc = await visitorsColl.findOne({ visitorId: cleanVisitorId });
 
-    if (!existing) {
-      await visitorsColl.insertOne({
-        visitorId,
+    if (!visitorDoc) {
+      const newVisitor = {
+        visitorId: cleanVisitorId,
         ipHash,
         firstSeen:     now,
         lastSeen:      now,
-        pageViewCount: 1,   // this is their first page view
+        visitCount:    1,
+        pageViewCount: 1,
         location,
         device: {
           os:         device.os || 'Unknown',
@@ -103,21 +92,48 @@ export default async function handler(req, res) {
           deviceType: device.deviceType || 'desktop',
           screen:     device.screenResolution || '',
         },
-        referrer,
-      });
+        referrer:      referrer || '',
+        trafficSource: trafficSource || 'Direct / Bookmark',
+      };
+      await visitorsColl.insertOne(newVisitor);
+      visitorDoc = newVisitor;
     } else {
-      // Update last seen; increment pageViewCount only on new page_view sessions
-      const update = { $set: { lastSeen: now } };
+      const update = {
+        $set: {
+          lastSeen: now,
+          location,
+          device: {
+            os:         device.os || visitorDoc.device?.os || 'Unknown',
+            browser:    device.browser || visitorDoc.device?.browser || 'Unknown',
+            deviceType: device.deviceType || visitorDoc.device?.deviceType || 'desktop',
+            screen:     device.screenResolution || visitorDoc.device?.screen || '',
+          },
+        }
+      };
+
       if (eventType === 'page_view') {
-        update.$inc = { pageViewCount: 1 };
+        update.$inc = {
+          pageViewCount: 1,
+          visitCount: 1
+        };
       }
-      await visitorsColl.updateOne({ visitorId }, update);
+
+      if (trafficSource && visitorDoc.trafficSource === 'Direct / Bookmark' && trafficSource !== 'Direct / Bookmark') {
+        update.$set.trafficSource = trafficSource;
+      }
+
+      await visitorsColl.updateOne({ visitorId: cleanVisitorId }, update);
+      visitorDoc.visitCount = (visitorDoc.visitCount || 1) + (eventType === 'page_view' ? 1 : 0);
     }
+
+    const visitNumber = visitorDoc.visitCount || 1;
 
     // ── INSERT EVENT ─────────────────────────────────────────────
     await eventsColl.insertOne({
-      visitorId,
+      visitorId: cleanVisitorId,
       sessionId:   sessionId || null,
+      visitNumber,
+      isFirstVisit: visitNumber === 1,
       ipHash,
       eventType,
       target,
@@ -127,13 +143,15 @@ export default async function handler(req, res) {
       deviceType:  device.deviceType || 'desktop',
       os:          device.os || 'Unknown',
       browser:     device.browser || 'Unknown',
-      referrer,
+      referrer:    referrer || '',
+      trafficSource: trafficSource || 'Direct / Bookmark',
     });
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, visitorId: cleanVisitorId, visitNumber });
 
   } catch (err) {
     console.error('[track]', err.message);
     return res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 }
+

@@ -2,13 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users, Eye, Clock, Activity, Shield, RefreshCw, LogOut,
   MapPin, MousePointer, Lock, ArrowLeft, KeyRound, Award,
-  CheckCircle, Settings, Monitor, Globe, Zap, BarChart2
+  CheckCircle, Settings, Monitor, Globe, Zap, BarChart2,
+  Compass, Calendar, UserCheck
 } from 'lucide-react';
 import './SecretAdmin.css';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function fmtTime(ts) {
+  if (!ts) return '—';
   return new Date(ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return `${d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} ${d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
 }
 function fmtDwell(ms) {
   if (!ms) return '—';
@@ -130,7 +137,7 @@ export default function SecretAdmin({ onBackToSite }) {
         body: JSON.stringify({
           action: 'reset_password',
           email: email.trim(),
-          password: securityAnswer,   // field doubles as current-password or security answer
+          password: securityAnswer,
           securityAnswer,
           newPassword,
         }),
@@ -209,7 +216,6 @@ export default function SecretAdmin({ onBackToSite }) {
             </p>
           </div>
 
-          {/* TABS */}
           <div className="auth-tab-group">
             <button
               className={`auth-tab-btn ${authTab === 'login' ? 'active' : ''}`}
@@ -228,7 +234,6 @@ export default function SecretAdmin({ onBackToSite }) {
           {error && <div className="alert-error">{error}</div>}
           {successMsg && <div className="alert-success">{successMsg}</div>}
 
-          {/* SIGN IN */}
           {authTab === 'login' && (
             <form onSubmit={handleLogin}>
               <div className="input-group">
@@ -248,7 +253,6 @@ export default function SecretAdmin({ onBackToSite }) {
             </form>
           )}
 
-          {/* RESET PASSWORD */}
           {authTab === 'reset' && (
             <form onSubmit={handleResetPassword}>
               <div className="input-group">
@@ -315,7 +319,7 @@ export default function SecretAdmin({ onBackToSite }) {
       {error && <div className="alert-error">{error}</div>}
       {successMsg && <div className="alert-success">{successMsg}</div>}
 
-      {/* ── CHANGE PASSWORD PANEL (in-dashboard) ── */}
+      {/* ── CHANGE PASSWORD PANEL ── */}
       {showSecurityPanel && (
         <div className="panel-card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(56,189,248,0.35)' }}>
           <div className="panel-title"><KeyRound size={17} color="#38bdf8" /> Change Password</div>
@@ -351,7 +355,127 @@ export default function SecretAdmin({ onBackToSite }) {
           value={`${s.avgDwellSeconds ?? 0}s`} label="Avg Dwell / Visitor" />
       </div>
 
-      {/* ── ROW 1: Heatmap + Clicks ── */}
+      {/* ── TRAFFIC SOURCES & UNIQUE VISITORS DIRECTORY ── */}
+      <div className="dashboard-grid">
+
+        {/* Traffic Sources */}
+        <div className="panel-card">
+          <div className="panel-title"><Compass size={17} color="#38bdf8" /> Traffic Sources (Where Users Came From)</div>
+          {stats?.trafficSources?.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {stats.trafficSources.map((src, i) => {
+                const total = s.totalUniqueVisitors || 1;
+                const pct = Math.round((src.count / total) * 100);
+                return (
+                  <div key={i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', fontSize: '0.85rem' }}>
+                      <span style={{ fontWeight: 600 }}>{src.source}</span>
+                      <span style={{ color: '#38bdf8', fontWeight: 700 }}>{src.count} user{src.count !== 1 ? 's' : ''} ({pct}%)</span>
+                    </div>
+                    <div className="bar-track">
+                      <div className="bar-fill" style={{ width: `${Math.max(5, pct)}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState text="No traffic source data recorded yet." />
+          )}
+        </div>
+
+        {/* Click Interactions */}
+        <div className="panel-card">
+          <div className="panel-title"><MousePointer size={17} color="#818cf8" /> Button & Link Clicks</div>
+          {stats?.clickInteractions?.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+              {stats.clickInteractions.map((item, i) => (
+                <div key={i} className="click-card">
+                  <div className="click-card-label" title={item.target}>{item.target}</div>
+                  <div className="click-card-value">{item.count}</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>click{item.count !== 1 ? 's' : ''}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState text="No button clicks recorded yet." />
+          )}
+        </div>
+      </div>
+
+      {/* ── UNIQUE USERS DIRECTORY ── */}
+      <div className="panel-card" style={{ marginBottom: '1.5rem' }}>
+        <div className="panel-title"><UserCheck size={17} color="#4ade80" /> Unique User Directory (IDs, Visit Counts & Activity)</div>
+        {stats?.uniqueVisitorsList?.length > 0 ? (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="activity-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Visit Count</th>
+                  <th>1st Time Visited</th>
+                  <th>Latest Visited</th>
+                  <th>Traffic Source</th>
+                  <th>Location</th>
+                  <th>Device / OS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.uniqueVisitorsList.map((usr, i) => (
+                  <tr key={i}>
+                    <td>
+                      <span style={{
+                        background: 'rgba(56,189,248,0.15)',
+                        color: '#38bdf8',
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '0.3rem',
+                        fontWeight: 700,
+                        fontFamily: 'monospace',
+                        fontSize: '0.82rem'
+                      }}>
+                        {usr.visitorId}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{
+                        background: 'rgba(74,222,128,0.15)',
+                        color: '#4ade80',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '1rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 600
+                      }}>
+                        {usr.visitCount} Visit{usr.visitCount !== 1 ? 's' : ''}
+                      </span>
+                    </td>
+                    <td style={{ color: '#94a3b8', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                      {fmtDate(usr.firstSeen)}
+                    </td>
+                    <td style={{ color: '#94a3b8', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                      {fmtDate(usr.lastSeen)}
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#e2e8f0' }}>
+                        {usr.trafficSource}
+                      </span>
+                    </td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      {usr.location?.city || '—'}, {usr.location?.country || '—'}
+                    </td>
+                    <td style={{ fontSize: '0.8rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                      {usr.device?.os || '—'} · {usr.device?.browser || '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState text="No unique user profiles created yet." />
+        )}
+      </div>
+
+      {/* ── ROW 2: Heatmap + Geolocation ── */}
       <div className="dashboard-grid">
 
         {/* Section Heatmap */}
@@ -373,31 +497,9 @@ export default function SecretAdmin({ onBackToSite }) {
               ))}
             </div>
           ) : (
-            <EmptyState text="No section dwell data yet. Scroll through the portfolio to generate it." />
+            <EmptyState text="No section dwell data yet." />
           )}
         </div>
-
-        {/* Click Interactions */}
-        <div className="panel-card">
-          <div className="panel-title"><MousePointer size={17} color="#818cf8" /> Button & Link Clicks</div>
-          {stats?.clickInteractions?.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-              {stats.clickInteractions.map((item, i) => (
-                <div key={i} className="click-card">
-                  <div className="click-card-label">{item.target}</div>
-                  <div className="click-card-value">{item.count}</div>
-                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>clicks</div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState text="No button clicks recorded yet." />
-          )}
-        </div>
-      </div>
-
-      {/* ── ROW 2: Location + Device ── */}
-      <div className="dashboard-grid">
 
         {/* Geolocation */}
         <div className="panel-card">
@@ -419,28 +521,6 @@ export default function SecretAdmin({ onBackToSite }) {
             <EmptyState text="No geolocation data available yet." />
           )}
         </div>
-
-        {/* Device Breakdown */}
-        <div className="panel-card">
-          <div className="panel-title"><Monitor size={17} color="#c084fc" /> Device & OS Breakdown</div>
-          {stats?.deviceBreakdown?.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {stats.deviceBreakdown.map((d, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.8rem', background: 'rgba(15,23,42,0.6)', borderRadius: '0.5rem' }}>
-                  <div>
-                    <span style={{ fontWeight: 600 }}>{d.os}</span>
-                    <span style={{ marginLeft: '0.5rem', fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase' }}>
-                      {d.type}
-                    </span>
-                  </div>
-                  <span style={{ fontWeight: 700, color: '#c084fc' }}>{d.count}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState text="No device data yet." />
-          )}
-        </div>
       </div>
 
       {/* ── ROW 3: Recruiter Leads ── */}
@@ -454,8 +534,8 @@ export default function SecretAdmin({ onBackToSite }) {
                   <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>
                     {rec.location?.city || '—'}, {rec.location?.country || '—'}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>
-                    ID: {String(rec._id).substring(0, 14)}…
+                  <div style={{ fontSize: '0.75rem', color: '#38bdf8', marginTop: '0.2rem', fontFamily: 'monospace', fontWeight: 600 }}>
+                    ID: {rec._id}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
                     Triggers: {(rec.triggers || []).join(', ') || 'N/A'}
@@ -471,7 +551,7 @@ export default function SecretAdmin({ onBackToSite }) {
         </div>
       )}
 
-      {/* ── EVENT LOG ── */}
+      {/* ── RECENT EVENT LOG ── */}
       <div className="panel-card">
         <div className="panel-title"><Activity size={17} color="#c084fc" /> Recent Event Log (Last 25)</div>
         {stats?.recentActivity?.length > 0 ? (
@@ -480,9 +560,11 @@ export default function SecretAdmin({ onBackToSite }) {
               <thead>
                 <tr>
                   <th>Time</th>
+                  <th>User ID & Visit #</th>
                   <th>Event</th>
                   <th>Target / Section</th>
                   <th>Dwell</th>
+                  <th>Source</th>
                   <th>Location</th>
                   <th>OS · Browser</th>
                 </tr>
@@ -494,6 +576,30 @@ export default function SecretAdmin({ onBackToSite }) {
                       {fmtTime(act.timestamp)}
                     </td>
                     <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={{
+                          background: 'rgba(56,189,248,0.12)',
+                          color: '#38bdf8',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '0.25rem',
+                          fontWeight: 700,
+                          fontFamily: 'monospace',
+                          fontSize: '0.78rem'
+                        }}>
+                          {act.visitorId || 'ANON'}
+                        </span>
+                        {act.visitNumber && (
+                          <span style={{
+                            fontSize: '0.7rem',
+                            color: act.isFirstVisit ? '#4ade80' : '#94a3b8',
+                            fontWeight: 600
+                          }}>
+                            {act.isFirstVisit ? '1st visit' : `v#${act.visitNumber}`}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
                       <span className={`badge-tag ${eventBadgeClass(act.eventType)}`}>
                         {act.eventType}
                       </span>
@@ -501,6 +607,9 @@ export default function SecretAdmin({ onBackToSite }) {
                     <td style={{ fontWeight: 500 }}>{act.target || '—'}</td>
                     <td style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {fmtDwell(act.dwellTimeMs)}
+                    </td>
+                    <td style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
+                      {act.trafficSource || act.referrer || 'Direct'}
                     </td>
                     <td style={{ whiteSpace: 'nowrap' }}>
                       {act.location?.city || '—'}, {act.location?.country || '—'}
@@ -547,3 +656,4 @@ function EmptyState({ text }) {
     </div>
   );
 }
+

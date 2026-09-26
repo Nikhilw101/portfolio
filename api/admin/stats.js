@@ -31,31 +31,16 @@ export default async function handler(req, res) {
     const now = new Date();
 
     // ── 1. SUMMARY CARDS ─────────────────────────────────────────
-    //
-    // Unique Visitors = number of distinct visitor documents
-    //   (1 doc = 1 real person identified by their localStorage UUID)
-    //
     const totalUniqueVisitors = await VC.countDocuments();
 
-    //
-    // Total Page Views = sum of pageViewCount across all visitor docs
-    //   (pageViewCount increments once per browser session/tab-open)
-    //
     const pvAgg = await VC
       .aggregate([{ $group: { _id: null, total: { $sum: '$pageViewCount' } } }])
       .toArray();
     const totalPageViews = pvAgg[0]?.total ?? 0;
 
-    //
-    // Live Active = visitors who pinged heartbeat in last 45 seconds
-    //
     const liveThreshold = new Date(now.getTime() - 45_000);
     const liveActiveVisitors = await HBC.countDocuments({ lastPing: { $gte: liveThreshold } });
 
-    //
-    // Avg Dwell = total dwell ms across ALL section_dwell events
-    //             divided by unique visitors, converted to seconds
-    //
     const dwellAgg = await EC
       .aggregate([
         { $match: { eventType: 'section_dwell', dwellTimeMs: { $gt: 0 } } },
@@ -66,7 +51,37 @@ export default async function handler(req, res) {
       ? Math.round(dwellAgg[0].totalMs / 1000 / totalUniqueVisitors)
       : 0;
 
-    // ── 2. SECTION HEATMAP ────────────────────────────────────────
+    // ── 2. TRAFFIC SOURCES ────────────────────────────────────────
+    const trafficSourcesRaw = await VC
+      .aggregate([
+        { $group: { _id: '$trafficSource', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ])
+      .toArray();
+
+    const trafficSources = trafficSourcesRaw.map(r => ({
+      source: r._id || 'Direct / Bookmark',
+      count:  r.count,
+    }));
+
+    // ── 3. UNIQUE VISITORS DIRECTORY ──────────────────────────────
+    const uniqueVisitorsList = await VC
+      .find({})
+      .sort({ lastSeen: -1 })
+      .limit(30)
+      .toArray()
+      .then(arr => arr.map(v => ({
+        visitorId:     v.visitorId,
+        firstSeen:     v.firstSeen,
+        lastSeen:      v.lastSeen,
+        visitCount:    v.visitCount || v.pageViewCount || 1,
+        pageViewCount: v.pageViewCount || 1,
+        trafficSource: v.trafficSource || 'Direct / Bookmark',
+        location:      v.location || { country: 'Unknown', city: 'Unknown' },
+        device:        v.device || { os: 'Unknown', browser: 'Unknown', deviceType: 'desktop' },
+      })));
+
+    // ── 4. SECTION HEATMAP ────────────────────────────────────────
     const heatmapRaw = await EC
       .aggregate([
         { $match: { eventType: 'section_dwell' } },
@@ -81,7 +96,7 @@ export default async function handler(req, res) {
       views:   r.views,
     }));
 
-    // ── 3. CLICK INTERACTIONS ─────────────────────────────────────
+    // ── 5. CLICK INTERACTIONS ─────────────────────────────────────
     const clickRaw = await EC
       .aggregate([
         { $match: { eventType: 'click' } },
@@ -95,7 +110,7 @@ export default async function handler(req, res) {
       count:  r.count,
     }));
 
-    // ── 4. GEOLOCATION ────────────────────────────────────────────
+    // ── 6. GEOLOCATION ────────────────────────────────────────────
     const locationBreakdown = await VC
       .aggregate([
         { $group: { _id: { country: '$location.country', city: '$location.city' }, count: { $sum: 1 } } },
@@ -109,7 +124,7 @@ export default async function handler(req, res) {
         count:   a.count,
       })));
 
-    // ── 5. DEVICE BREAKDOWN ───────────────────────────────────────
+    // ── 7. DEVICE BREAKDOWN ───────────────────────────────────────
     const deviceBreakdown = await VC
       .aggregate([
         { $group: {
@@ -125,21 +140,18 @@ export default async function handler(req, res) {
         count: a.count,
       })));
 
-    // ── 6. RECENT EVENTS (latest 25 — all types, no duplication) ─
+    // ── 8. RECENT ACTIVITY LOG (Latest 25 events) ─────────────────
     const recentActivity = await EC
       .find({})
       .sort({ timestamp: -1 })
       .limit(25)
       .toArray();
 
-    // ── 7. HIGH-ENGAGEMENT / RECRUITER LEADS ─────────────────────
-    //
-    // Flagged if visitor: downloaded resume OR dwelled ≥60s in a section
-    //
+    // ── 9. HIGH-INTENT VISITORS / RECRUITER LEADS ───────────────
     const recruiterLeads = await EC
       .aggregate([
         { $match: { $or: [
-          { target: 'resume_download' },
+          { target: { $regex: /resume/i } },
           { eventType: 'section_dwell', dwellTimeMs: { $gte: 60_000 } },
         ]}},
         { $group: {
@@ -156,6 +168,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       summary: { totalUniqueVisitors, totalPageViews, liveActiveVisitors, avgDwellSeconds },
+      trafficSources,
+      uniqueVisitorsList,
       sectionHeatmap,
       clickInteractions,
       locationBreakdown,
@@ -170,3 +184,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 }
+

@@ -1,26 +1,27 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 // ─── Keys ────────────────────────────────────────────────────────────────────
-const VISITOR_KEY = 'portfolio_visitor_id';  // localStorage  — permanent UUID
+const VISITOR_KEY = 'portfolio_visitor_id';  // localStorage  — permanent user ID
 const SESSION_KEY = 'portfolio_session_id';  // sessionStorage — one per tab/session
 
-// Get or create permanent visitor UUID (localStorage — persists across sessions)
+// Format or create permanent Visitor ID (localStorage — persists across sessions)
 function getVisitorId() {
   let id = localStorage.getItem(VISITOR_KEY);
   if (!id) {
-    id = crypto?.randomUUID?.() ??
-      ('v_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36));
+    // Generate clean readable user ID format: USR-XXXXXX
+    const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
+    id = `USR-${randomHex}`;
+    localStorage.setItem(VISITOR_KEY, id);
+  } else if (!id.startsWith('USR-')) {
+    // Migrate old ID format to USR- format if needed
+    const shortCode = id.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase() || Math.random().toString(36).substring(2, 8).toUpperCase();
+    id = `USR-${shortCode}`;
     localStorage.setItem(VISITOR_KEY, id);
   }
   return id;
 }
 
 // Get or create session ID (sessionStorage — resets on tab close/reopen)
-// This is the page-view deduplication gate:
-//   • Same tab, hot-reload (dev HMR, React StrictMode) → same sessionStorage → NO new page_view ✓
-//   • Same tab, F5 refresh                              → same sessionStorage → NO new page_view ✓
-//   • New tab / window                                  → fresh sessionStorage → YES new page_view ✓
-//   • Close tab, reopen site                            → fresh sessionStorage → YES new page_view ✓
 function getOrCreateSessionId() {
   let sid = sessionStorage.getItem(SESSION_KEY);
   if (!sid) {
@@ -38,7 +39,38 @@ function isNewSession() {
   return true;
 }
 
-// Detect device details from User-Agent (no permission needed)
+// Detect traffic source from referrer and URL params
+function getTrafficSource() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmSource = urlParams.get('utm_source') || urlParams.get('ref') || urlParams.get('source');
+    if (utmSource) {
+      return `Campaign / ${utmSource}`;
+    }
+
+    const ref = document.referrer;
+    if (!ref) return 'Direct / Bookmark';
+
+    const url = new URL(ref);
+    const host = url.hostname.toLowerCase();
+
+    if (host.includes('linkedin')) return 'LinkedIn';
+    if (host.includes('github')) return 'GitHub';
+    if (host.includes('google')) return 'Google Search';
+    if (host.includes('bing') || host.includes('yahoo') || host.includes('duckduckgo')) return 'Search Engine';
+    if (host.includes('t.co') || host.includes('twitter') || host.includes('x.com')) return 'Twitter / X';
+    if (host.includes('instagram')) return 'Instagram';
+    if (host.includes('facebook')) return 'Facebook';
+    if (host.includes('youtube')) return 'YouTube';
+    if (host === window.location.hostname) return 'Internal';
+
+    return host.replace(/^www\./, '');
+  } catch {
+    return 'Direct / Bookmark';
+  }
+}
+
+// Detect device details from User-Agent
 function getDeviceDetails() {
   const ua = navigator.userAgent;
 
@@ -74,13 +106,14 @@ export function useAnalytics() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          visitorId:   visitorIdRef.current || getVisitorId(),
-          sessionId:   sessionIdRef.current || getOrCreateSessionId(),
+          visitorId:     visitorIdRef.current || getVisitorId(),
+          sessionId:     sessionIdRef.current || getOrCreateSessionId(),
           eventType,
           target,
-          dwellTimeMs: Math.round(dwellTimeMs),
-          referrer:    document.referrer || 'Direct',
-          device:      getDeviceDetails(),
+          dwellTimeMs:   Math.round(dwellTimeMs),
+          referrer:      document.referrer || '',
+          trafficSource: getTrafficSource(),
+          device:        getDeviceDetails(),
         }),
       });
     } catch (err) {
@@ -88,7 +121,7 @@ export function useAnalytics() {
     }
   }, []);
 
-  // Expose click tracker for use in other components
+  // Expose explicit click tracker
   const trackClick = useCallback(
     (targetName) => trackEvent('click', targetName),
     [trackEvent]
@@ -105,7 +138,32 @@ export function useAnalytics() {
       trackEvent('page_view', 'portfolio_main');
     }
 
-    // ── 2. Heartbeat — only while tab is visible, every 25s ──
+    // ── 2. Automatic Global Click Listener ────────────────────
+    const handleGlobalClick = (e) => {
+      const targetEl = e.target.closest('a, button, [role="button"], [data-track]');
+      if (!targetEl) return;
+
+      // Extract meaningful label for the click event
+      let label = targetEl.getAttribute('data-track') ||
+                  targetEl.getAttribute('aria-label') ||
+                  targetEl.title ||
+                  targetEl.innerText?.trim() ||
+                  targetEl.getAttribute('href') ||
+                  targetEl.id ||
+                  'interactive_element';
+
+      // Clean string
+      label = label.replace(/\s+/g, ' ').trim();
+      if (label.length > 50) label = label.slice(0, 50) + '...';
+
+      if (label) {
+        trackClick(label);
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick, { capture: true });
+
+    // ── 3. Heartbeat — only while tab is visible, every 25s ──
     const heartbeatInterval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         fetch('/api/heartbeat', {
@@ -116,7 +174,7 @@ export function useAnalytics() {
       }
     }, 25_000);
 
-    // ── 3. Section Dwell — IntersectionObserver ───────────────
+    // ── 4. Section Dwell — IntersectionObserver ───────────────
     const SECTIONS = [
       'home', 'about', 'projects', 'publications',
       'experience', 'skills', 'achievements', 'contact',
@@ -132,12 +190,10 @@ export function useAnalytics() {
           const now = Date.now();
 
           if (entry.isIntersecting) {
-            // Section entered viewport — start timer
             if (!activeSectionRef.current[id]) {
               activeSectionRef.current[id] = now;
             }
           } else if (activeSectionRef.current[id]) {
-            // Section left viewport — flush if meaningful (≥2s)
             const duration = now - activeSectionRef.current[id];
             delete activeSectionRef.current[id];
             if (duration >= 2_000) {
@@ -158,11 +214,11 @@ export function useAnalytics() {
 
     // ── Cleanup ───────────────────────────────────────────────
     return () => {
+      document.removeEventListener('click', handleGlobalClick, { capture: true });
       clearInterval(heartbeatInterval);
       clearTimeout(attachTimer);
       observer.disconnect();
 
-      // Flush any still-visible sections
       const now = Date.now();
       Object.entries(activeSectionRef.current).forEach(([id, start]) => {
         const duration = now - start;
@@ -170,7 +226,8 @@ export function useAnalytics() {
       });
       activeSectionRef.current = {};
     };
-  }, [trackEvent]);
+  }, [trackEvent, trackClick]);
 
   return { trackClick, trackEvent };
 }
+
