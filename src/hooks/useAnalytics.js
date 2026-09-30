@@ -101,6 +101,12 @@ export function useAnalytics() {
 
   // ── Core POST helper ──────────────────────────────────────────
   const trackEvent = useCallback(async (eventType, target = '', dwellTimeMs = 0) => {
+    const isSecret = 
+      window.location.pathname === '/secret-admin' || 
+      window.location.pathname === '/admin' || 
+      window.location.hash === '#secret-admin';
+    if (isSecret) return;
+
     try {
       await fetch('/api/track', {
         method: 'POST',
@@ -129,6 +135,12 @@ export function useAnalytics() {
 
   // ── Main Effect ───────────────────────────────────────────────
   useEffect(() => {
+    const isSecret = 
+      window.location.pathname === '/secret-admin' || 
+      window.location.pathname === '/admin' || 
+      window.location.hash === '#secret-admin';
+    if (isSecret) return;
+
     // Initialise IDs
     visitorIdRef.current = getVisitorId();
     sessionIdRef.current = getOrCreateSessionId();

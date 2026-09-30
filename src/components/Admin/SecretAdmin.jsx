@@ -3,7 +3,7 @@ import {
   Users, Eye, Clock, Activity, Shield, RefreshCw, LogOut,
   MapPin, MousePointer, Lock, ArrowLeft, KeyRound, Award,
   CheckCircle, Settings, Monitor, Globe, Zap, BarChart2,
-  Compass, Calendar, UserCheck
+  Compass, Calendar, UserCheck, Trash2, Search, Filter
 } from 'lucide-react';
 import './SecretAdmin.css';
 
@@ -50,6 +50,38 @@ export default function SecretAdmin({ onBackToSite }) {
   const [changeOldPw, setChangeOldPw] = useState('');
   const [changeNewPw, setChangeNewPw] = useState('');
   const [loggedEmail, setLoggedEmail] = useState('');
+
+  // Filtering and Reset state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterSource, setFilterSource] = useState('All');
+  const [eventSearch, setEventSearch] = useState('');
+  const [eventTypeFilter, setEventTypeFilter] = useState('All');
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetData = async () => {
+    if (!window.confirm("WARNING: This will permanently delete all tracking and analytics data (except admin logins). Continue?")) return;
+    
+    setIsResetting(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      const res = await fetch('/api/admin/reset', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSuccessMsg(data.message);
+        fetchStats(token);
+      } else {
+        setError(data.error || 'Failed to reset data');
+      }
+    } catch {
+      setError('Error resetting data');
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   // ── Fetch Stats ────────────────────────────────────────────────
   const fetchStats = useCallback(async (authToken) => {
@@ -307,6 +339,9 @@ export default function SecretAdmin({ onBackToSite }) {
           <button onClick={() => { setShowSecurityPanel(v => !v); setError(''); setSuccessMsg(''); }} className="btn-admin">
             <Settings size={15} /> Security
           </button>
+          <button onClick={handleResetData} className="btn-admin btn-danger" disabled={isResetting}>
+            <Trash2 size={15} className={isResetting ? 'spin' : ''} /> Reset Data
+          </button>
           <button onClick={onBackToSite} className="btn-admin">
             <ArrowLeft size={15} /> Portfolio
           </button>
@@ -405,7 +440,36 @@ export default function SecretAdmin({ onBackToSite }) {
 
       {/* ── UNIQUE USERS DIRECTORY ── */}
       <div className="panel-card" style={{ marginBottom: '1.5rem' }}>
-        <div className="panel-title"><UserCheck size={17} color="#4ade80" /> Unique User Directory (IDs, Visit Counts & Activity)</div>
+        <div className="panel-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div><UserCheck size={17} color="#4ade80" /> Unique User Directory (IDs, Visit Counts & Activity)</div>
+          <div className="filter-controls" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="Search ID, City..." 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: '1.75rem', paddingRight: '0.5rem', paddingTop: '0.4rem', paddingBottom: '0.4rem', width: '200px' }}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Filter size={14} style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <select 
+                className="input-field"
+                value={filterSource}
+                onChange={e => setFilterSource(e.target.value)}
+                style={{ paddingLeft: '1.75rem', paddingTop: '0.4rem', paddingBottom: '0.4rem' }}
+              >
+                <option value="All">All Sources</option>
+                {Array.from(new Set(stats?.uniqueVisitorsList?.map(u => u.trafficSource) || [])).map(src => (
+                  <option key={src} value={src}>{src}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
         {stats?.uniqueVisitorsList?.length > 0 ? (
           <div style={{ overflowX: 'auto' }}>
             <table className="activity-table">
@@ -421,7 +485,13 @@ export default function SecretAdmin({ onBackToSite }) {
                 </tr>
               </thead>
               <tbody>
-                {stats.uniqueVisitorsList.map((usr, i) => (
+                {(stats.uniqueVisitorsList || []).filter(usr => {
+                  const searchMatches = usr.visitorId.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                        (usr.location?.city || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        (usr.location?.country || '').toLowerCase().includes(searchTerm.toLowerCase());
+                  const sourceMatches = filterSource === 'All' || usr.trafficSource === filterSource;
+                  return searchMatches && sourceMatches;
+                }).map((usr, i) => (
                   <tr key={i}>
                     <td>
                       <span style={{
@@ -553,7 +623,36 @@ export default function SecretAdmin({ onBackToSite }) {
 
       {/* ── RECENT EVENT LOG ── */}
       <div className="panel-card">
-        <div className="panel-title"><Activity size={17} color="#c084fc" /> Recent Event Log (Last 25)</div>
+        <div className="panel-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div><Activity size={17} color="#c084fc" /> Recent Event Log</div>
+          <div className="filter-controls" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="Search ID, Target..." 
+                value={eventSearch} 
+                onChange={e => setEventSearch(e.target.value)}
+                style={{ paddingLeft: '1.75rem', paddingRight: '0.5rem', paddingTop: '0.4rem', paddingBottom: '0.4rem', width: '200px' }}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Filter size={14} style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <select 
+                className="input-field"
+                value={eventTypeFilter}
+                onChange={e => setEventTypeFilter(e.target.value)}
+                style={{ paddingLeft: '1.75rem', paddingTop: '0.4rem', paddingBottom: '0.4rem' }}
+              >
+                <option value="All">All Events</option>
+                {Array.from(new Set(stats?.recentActivity?.map(a => a.eventType) || [])).map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
         {stats?.recentActivity?.length > 0 ? (
           <div style={{ overflowX: 'auto' }}>
             <table className="activity-table">
@@ -570,7 +669,13 @@ export default function SecretAdmin({ onBackToSite }) {
                 </tr>
               </thead>
               <tbody>
-                {stats.recentActivity.map((act, i) => (
+                {(stats.recentActivity || []).filter(act => {
+                  const searchMatches = (act.visitorId || '').toLowerCase().includes(eventSearch.toLowerCase()) || 
+                                        (act.target || '').toLowerCase().includes(eventSearch.toLowerCase()) ||
+                                        (act.eventType || '').toLowerCase().includes(eventSearch.toLowerCase());
+                  const typeMatches = eventTypeFilter === 'All' || act.eventType === eventTypeFilter;
+                  return searchMatches && typeMatches;
+                }).map((act, i) => (
                   <tr key={i}>
                     <td style={{ color: '#64748b', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                       {fmtTime(act.timestamp)}
